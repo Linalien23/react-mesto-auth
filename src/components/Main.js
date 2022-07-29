@@ -2,12 +2,23 @@ import React, { useEffect, useState } from 'react';
 import Card from '../components/Card.js';
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
 
-function Main({ onEditAvatar, onEditProfile, onAddPlace, onCardClick, onCardLike, onCardDelete, cards }) {
+function Main({ onEditAvatar, onEditProfile, onAddPlace, onCardClick, onCardLike, onCardDelete, cards, userData, onDeleteToken }) {
 
     const user = React.useContext(CurrentUserContext); // подписка на контекст
+    const email = userData;
+
+    function onSignOut() {
+        onDeleteToken();
+    }
 
     return (
         <main>
+
+            <Header
+                text='Выйти'
+                onClick={onSignOut}>
+                <p className="header__text">{email}</p>
+            </Header>
 
             <section className='profile'>
                 <div className='profile__avatar'>
