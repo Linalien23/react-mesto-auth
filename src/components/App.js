@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Switch, useHistory } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, useHistory } from 'react-router-dom';
 import Footer from './Footer.js';
 import Main from './Main.js';
 import PopupWithForm from './PopupWithForm.js';
@@ -209,41 +209,41 @@ function App() {
   }
 
 
-
   return (
     <CurrentUserContext.Provider value={currentUser}> // «обернуть» в провайдер объекта CurrentUserContext всё текущее содержимое корневого компонента
 
       <div className="page">
         <div className="page__content">
 
-          <Switch>
+          <BrowserRouter>
+            <Switch>
 
-            <Route exact={true} path="/sign-in">
-              <Login
-                onAuthorize={onAuthorize} />
-            </Route>
+              <Route exact={true} path="/sign-in">
+                <Login
+                  onAuthorize={onAuthorize} />
+              </Route>
 
-            <Route exact={true} path="/sign-up">
-              <Register
-                onButtonClick={onRegister} />
-            </Route>
+              <Route exact={true} path="/sign-up">
+                <Register
+                  onButtonClick={onRegister} />
+              </Route>
 
-            <ProtectedRoute exact={true} path="/"
-              loggedIn={loggedIn}
-              onEditAvatar={setIsEditAvatarPopupOpen}
-              onEditProfile={setIsEditProfilePopupOpen}
-              onAddPlace={setIsAddPlacePopupOpen}
-              onCardClick={setSelectedCard}
-              cards={cards}
-              onCardLike={handleCardLike}
-              onCardDelete={handleCardDelete}
-              component={Main}
-              userData={userEmail}
-              onDeleteToken={deleteToken}>
-            </ProtectedRoute>
+              <ProtectedRoute exact={true} path="/"
+                loggedIn={loggedIn}
+                onEditAvatar={setIsEditAvatarPopupOpen}
+                onEditProfile={setIsEditProfilePopupOpen}
+                onAddPlace={setIsAddPlacePopupOpen}
+                onCardClick={setSelectedCard}
+                cards={cards}
+                onCardLike={handleCardLike}
+                onCardDelete={handleCardDelete}
+                component={Main}
+                userData={userEmail}
+                onDeleteToken={deleteToken}>
+              </ProtectedRoute>
 
-          </Switch>
-
+            </Switch>
+          </BrowserRouter>
           <Footer />
 
           <EditAvatarPopup

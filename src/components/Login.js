@@ -40,7 +40,7 @@ function Login({ onAuthorize }) { // компонент авторизации �
             <div className="login">
 
                 <h3 className="authorize__title">Вход</h3>
-                <form className=" popup__form authorize__form" name='login-form' onSubmit={handleSubmit}>
+                <form className="authorize__form" name='login-form' onSubmit={handleSubmit}>
 
                     <input
                         id="email-input"
@@ -67,7 +67,7 @@ function Login({ onAuthorize }) { // компонент авторизации �
                         required />
 
                     <button
-                        className="popup__submit-btn authorize__form-button"
+                        className="popup__submit-btn authorize__form-btn"
                         type="submit">
                         Войти
                     </button>
