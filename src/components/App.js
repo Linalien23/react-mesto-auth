@@ -15,7 +15,7 @@ import { CurrentUserContext } from '../contexts/CurrentUserContext.js';
 import api from '../utils/Api';
 import * as auth from '../utils/auth.js';
 import union from '../images/Union.png';
-import union_err from '../images/Union_error.png';
+import union_err from '../images/Union_Err.png';
 
 function App() {
 

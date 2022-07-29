@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../components/Card.js';
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
+import Header from './Header.js';
 
 function Main({ onEditAvatar, onEditProfile, onAddPlace, onCardClick, onCardLike, onCardDelete, cards, userData, onDeleteToken }) {
 
