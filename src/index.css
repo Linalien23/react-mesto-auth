@@ -18,6 +18,7 @@
 @import url('./blocks/popup/popup.css');
 @import url('./blocks/popup/_opened/popup_opened.css');
 @import url('./blocks/popup/__container/popup__container.css');
+@import url('./blocks/popup/__form/popup__form.css');
 @import url('./blocks/popup/__title/popup__title.css');
 @import url('./blocks/popup/__input/popup__input.css');
 @import url('./blocks/popup/__input/_error/popup__input_error.css');
@@ -49,3 +50,11 @@
 @import url('./blocks/edit-avatar-popup/__container/edit-avatar-popup__container.css');
 @import url('./blocks/edit-avatar-popup/__submit-btn/edit-avatar-popup__submit-btn.css');
 @import url('./blocks/edit-avatar-popup/__texterror/edit-avatar-popup__texterror.css');
+@import url('./blocks/authorize/__form-btn/authorize__form-btn.css');
+@import url('./blocks/authorize/__form-input/authorize__form-input.css');
+@import url('./blocks/authorize/__form/authorize__form.css');
+@import url('./blocks/authorize/__title/authorize__title.css');
+@import url('./blocks/register/__link/register__link.css');
+@import url('./blocks/register/__text/register__text.css');
+@import url('./blocks/infoTooltip/__image/infoTooltip__image.css');
+@import url('./blocks/infoTooltip/__text/nfoTooltip__text.css');
