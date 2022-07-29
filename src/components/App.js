@@ -1,5 +1,5 @@
-import React from 'react';
-import Header from './Header.js';
+import React, { useState, useEffect } from 'react';
+import { Route, Switch, useHistory } from 'react-router-dom';
 import Footer from './Footer.js';
 import Main from './Main.js';
 import PopupWithForm from './PopupWithForm.js';
@@ -7,47 +7,69 @@ import ImagePopup from './ImagePopup.js';
 import EditProfilePopup from './EditProfilePopup.js';
 import EditAvatarPopup from './EditAvatarPopup.js';
 import AddPlacePopup from './AddPlacePopup.js';
+import Login from './Login.js';
+import Register from './Register.js';
+import InfoTooltip from './InfoTooltip.js';
+import ProtectedRoute from './ProtectedRoute.js';
 import { CurrentUserContext } from '../contexts/CurrentUserContext.js';
-import { CardContext } from '../contexts/CardContext.js';
 import api from '../utils/Api';
+import * as auth from '../utils/auth.js';
+import union from '../images/Union.png';
+import union_err from '../images/Union_error.png';
 
 function App() {
 
   // Хуки
-  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
-  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
-  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false);
-  const [selectedCard, setSelectedCard] = React.useState({});
-  const [currentUser, setCurrentUser] = React.useState({}); // переменная состояния currentUser
-  const [cards, setCards] = React.useState([]);
+  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
+  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
+  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState({});
+  const [currentUser, setCurrentUser] = useState({}); // переменная состояния currentUser
+  const [cards, setCards] = useState([]);
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [text, setText] = useState('');
+  const [image, setImage] = useState('');
+  const history = useHistory();
 
-  React.useEffect(() => { // эффект при монтировании
-    api.getProfileInfo().then((userStats) => {
-      setCurrentUser(
-        userStats
-      )
-    })
-      .catch((err) => {
-        console.log(err);
-      })
-
-    api.getCards().then((data) => {
-      setCards(
-        data.map((card) => ({
-          _id: card._id,
-          name: card.name,
-          link: card.link,
-          owner: card.owner,
-          likes: card.likes
-        }))
-      )
-    })
-      .catch((err) => {
-        console.log(err);
-      })
+  useEffect(() => {
+    tokenCheck()
   }, []);
 
+  // Запрос к API за информацией о пользователе и массиве карточек при монтировании
+  useEffect(() => {
+    if (loggedIn) {
+      api.getProfileInfo()
+        .then((userStats) => {
+          setCurrentUser(
+            userStats
+          )
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      api.getCards().
+        then((data) => {
+          setCards(
+            data.map((card) => ({
+              _id: card._id,
+              name: card.name,
+              link: card.link,
+              owner: card.owner,
+              likes: card.likes,
+            }))
+          )
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+    }
+  }, [loggedIn]);
+
   function closeAllPopup() {
+    setIsInfoTooltipOpen(false);
     setIsEditAvatarPopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setIsEditProfilePopupOpen(false);
@@ -129,14 +151,85 @@ function App() {
       });
   }
 
+  function tokenCheck() {
+    // если у пользователя есть токен в localStorage, 
+    // эта функция проверит, действующий он или нет
+    if (localStorage.getItem('token')) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // проверим токен
+        auth.getContent(token)
+          .then((res) => {
+            if (res) {
+              // авторизуем пользователя
+              const email = res.data.email
+              setLoggedIn(true);
+              setUserEmail(email);
+            }
+            history.push('/')
+          })
+          .catch((err) => console.log(err));
+      }
+    }
+  }
+
+  function deleteToken() { // удалить JWT-токен из localStorage и переадресовать пользователя на страницу /sign-in
+    localStorage.removeItem('token');
+    history.push('/sign-in')
+    setLoggedIn(false);
+  }
+
+  function onRegister(email, password) {
+    auth.register(email, password)
+      .then((res) => {
+        if (res) { // Пользователь должен быть переадресован, только если форма регистрации правильно заполнена и отправлена
+          history.push('./sign-in');
+          setIsInfoTooltipOpen(true);
+          setText('Вы успешно зарегистрировались!')
+          setImage(union)
+        } else {
+          setIsInfoTooltipOpen(true);
+          setText('Что-то пошло не так! Попробуйте ещё раз.')
+          setImage(union_err)
+        }
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function onAuthorize(email, password) {
+    auth.authorize(email, password)
+      .then((data) => {
+        if (data.token) {
+          setLoggedIn(true);
+          setUserEmail(email);
+          history.push('/')
+        }
+      })
+      .catch(err => console.log(err));
+  }
+
+
+
   return (
     <CurrentUserContext.Provider value={currentUser}> // «обернуть» в провайдер объекта CurrentUserContext всё текущее содержимое корневого компонента
-      <CardContext.Provider value={cards}>
-        <div className="page">
-          <div className="page__content">
 
-            <Header />
-            <Main
+      <div className="page">
+        <div className="page__content">
+
+          <Switch>
+
+            <Route exact={true} path="/sign-in">
+              <Login
+                onAuthorize={onAuthorize} />
+            </Route>
+
+            <Route exact={true} path="/sign-up">
+              <Register
+                onButtonClick={onRegister} />
+            </Route>
+
+            <ProtectedRoute exact={true} path="/"
+              loggedIn={loggedIn}
               onEditAvatar={setIsEditAvatarPopupOpen}
               onEditProfile={setIsEditProfilePopupOpen}
               onAddPlace={setIsAddPlacePopupOpen}
@@ -144,42 +237,54 @@ function App() {
               cards={cards}
               onCardLike={handleCardLike}
               onCardDelete={handleCardDelete}
-            />
+              component={Main}
+              userData={userEmail}
+              onDeleteToken={deleteToken}>
+            </ProtectedRoute>
 
-            <Footer />
+          </Switch>
 
-            <EditAvatarPopup
-              isOpen={isEditAvatarPopupOpen}
-              onClose={closeAllPopup}
-              onUpdateAvatar={handleUpdateAvatar}
-            />
+          <Footer />
 
-            <EditProfilePopup
-              isOpen={isEditProfilePopupOpen}
-              onClose={closeAllPopup}
-              onUpdateUser={handleUpdateUser}
-            />
+          <EditAvatarPopup
+            isOpen={isEditAvatarPopupOpen}
+            onClose={closeAllPopup}
+            onUpdateAvatar={handleUpdateAvatar}
+          />
 
-            <AddPlacePopup
-              isOpen={isAddPlacePopupOpen}
-              onClose={closeAllPopup}
-              onAddPlace={handleAddPlaceSubmit}
-            />
+          <EditProfilePopup
+            isOpen={isEditProfilePopupOpen}
+            onClose={closeAllPopup}
+            onUpdateUser={handleUpdateUser}
+          />
 
-            <PopupWithForm
-              name='delete-form'
-              title='Вы уверены?'
-              buttonText='Да'>
-            </PopupWithForm>
+          <AddPlacePopup
+            isOpen={isAddPlacePopupOpen}
+            onClose={closeAllPopup}
+            onAddPlace={handleAddPlaceSubmit}
+          />
 
-            <ImagePopup
-              card={selectedCard}
-              onClose={closeAllPopup}
-            />
+          <PopupWithForm
+            name='delete-form'
+            title='Вы уверены?'
+            buttonText='Да'>
+          </PopupWithForm>
 
-          </div>
+          <ImagePopup
+            card={selectedCard}
+            onClose={closeAllPopup}
+          />
+
+          <InfoTooltip
+            isOpen={isInfoTooltipOpen}
+            onClose={closeAllPopup}
+            image={image}
+            text={text}
+          />
+
         </div>
-      </CardContext.Provider>
+      </div>
+
     </CurrentUserContext.Provider>
 
   );
