@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Route, Switch, useHistory } from 'react-router-dom';
+import Header from './Header.js';
 import Footer from './Footer.js';
 import Main from './Main.js';
 import PopupWithForm from './PopupWithForm.js';
@@ -34,7 +35,7 @@ function App() {
   const history = useHistory();
 
   useEffect(() => {
-    tokenCheck()
+    checkToken()
   }, []);
 
   // Запрос к API за информацией о пользователе и массиве карточек при монтировании
@@ -52,15 +53,7 @@ function App() {
 
       api.getCards().
         then((data) => {
-          setCards(
-            data.map((card) => ({
-              _id: card._id,
-              name: card.name,
-              link: card.link,
-              owner: card.owner,
-              likes: card.likes,
-            }))
-          )
+          setCards(data)
         })
         .catch((err) => {
           console.log(err);
@@ -79,24 +72,23 @@ function App() {
   function handleCardLike(card) { // Код, который будет вызываться при клике на лайк
     // Проверяем, есть ли уже лайк на этой карточке
     const isLiked = card.likes.some(i => i._id === currentUser._id);
+    function handleNewCardLike(newCard) {
+      const newCards = cards.map((c) => c._id === card._id ? newCard : c);
+      setCards(newCards);
+    }
 
-    // Отправляем запрос в API и получаем обновлённые данные карточки
-    if (!isLiked) { // 
+    if (!isLiked) {
       api.likeCard(card._id)
-        .then((newCard) => {
-          setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
-        })
-        .catch((err) => {
+        .then(handleNewCardLike)
+        .catch(err => {
           console.log(err);
-        })
+        });
     } else {
       api.dislikeCard(card._id)
-        .then((newCard) => {
-          setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
-        })
-        .catch((err) => {
+        .then(handleNewCardLike)
+        .catch(err => {
           console.log(err);
-        })
+        });
     }
   }
 
@@ -151,32 +143,32 @@ function App() {
       });
   }
 
-  function tokenCheck() {
+  function checkToken() {
     // если у пользователя есть токен в localStorage, 
     // эта функция проверит, действующий он или нет
-    if (localStorage.getItem('token')) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        // проверим токен
-        auth.getContent(token)
-          .then((res) => {
-            if (res) {
-              // авторизуем пользователя
-              const email = res.data.email
-              setLoggedIn(true);
-              setUserEmail(email);
-            }
-            history.push('/')
-          })
-          .catch((err) => console.log(err));
-      }
+    const token = localStorage.getItem('token');
+    if (token) {
+      // проверим токен
+      auth.getContent(token)
+        .then((res) => {
+          if (res) {
+            // авторизуем пользователя
+            const email = res.data.email
+            setLoggedIn(true);
+            setUserEmail(email);
+          }
+          history.push('/')
+        })
+        .catch((err) => console.log(err));
     }
+
   }
 
-  function deleteToken() { // удалить JWT-токен из localStorage и переадресовать пользователя на страницу /sign-in
+  function handleSignOut() { // удалить JWT-токен из localStorage и переадресовать пользователя на страницу /sign-in
     localStorage.removeItem('token');
-    history.push('/sign-in')
+    history.push('/sign-in');
     setLoggedIn(false);
+    setUserEmail(null);
   }
 
   function onRegister(email, password) {
@@ -208,42 +200,45 @@ function App() {
       .catch(err => console.log(err));
   }
 
-
   return (
     <CurrentUserContext.Provider value={currentUser}> // «обернуть» в провайдер объекта CurrentUserContext всё текущее содержимое корневого компонента
 
       <div className="page">
         <div className="page__content">
 
-          <BrowserRouter>
-            <Switch>
+          <Header
+            text='Выйти'
+            onClick={handleSignOut}>
+            <p className="header__text">{userEmail}</p>
+          </Header>
 
-              <Route exact={true} path="/sign-in">
-                <Login
-                  onAuthorize={onAuthorize} />
-              </Route>
+          <Switch>
 
-              <Route exact={true} path="/sign-up">
-                <Register
-                  onButtonClick={onRegister} />
-              </Route>
+            <Route exact={true} path="/sign-in">
+              <Login
+                onAuthorize={onAuthorize} />
+            </Route>
 
-              <ProtectedRoute exact={true} path="/"
-                loggedIn={loggedIn}
-                onEditAvatar={setIsEditAvatarPopupOpen}
-                onEditProfile={setIsEditProfilePopupOpen}
-                onAddPlace={setIsAddPlacePopupOpen}
-                onCardClick={setSelectedCard}
-                cards={cards}
-                onCardLike={handleCardLike}
-                onCardDelete={handleCardDelete}
-                component={Main}
-                userData={userEmail}
-                onDeleteToken={deleteToken}>
-              </ProtectedRoute>
+            <Route exact={true} path="/sign-up">
+              <Register
+                onButtonClick={onRegister} />
+            </Route>
 
-            </Switch>
-          </BrowserRouter>
+            <ProtectedRoute exact={true} path="/"
+              loggedIn={loggedIn}
+              onEditAvatar={setIsEditAvatarPopupOpen}
+              onEditProfile={setIsEditProfilePopupOpen}
+              onAddPlace={setIsAddPlacePopupOpen}
+              onCardClick={setSelectedCard}
+              cards={cards}
+              onCardLike={handleCardLike}
+              onCardDelete={handleCardDelete}
+              component={Main}
+              userData={userEmail}
+              onDeleteToken={handleSignOut}>
+            </ProtectedRoute>
+
+          </Switch>
           <Footer />
 
           <EditAvatarPopup
