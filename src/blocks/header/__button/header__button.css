@@ -9,6 +9,7 @@
     font-size: 18px;
     font-weight: normal;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .header__button:hover {

@@ -30,9 +30,9 @@ function Register({ onButtonClick }) { // компонент регистрац�
     return (
         <section>
 
-            <Header
+            {/* <Header
                 text='Войти'
-                onClick={onLogin} />
+                onClick={onLogin} /> */}
 
             <div className="register">
 

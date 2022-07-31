@@ -33,10 +33,6 @@ function Login({ onAuthorize }) { // компонент авторизации �
     return (
         <section>
 
-            <Header
-                text='Регистрация'
-                onClick={onRegister} />
-
             <div className="login">
 
                 <h3 className="authorize__title">Вход</h3>

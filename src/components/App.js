@@ -205,12 +205,10 @@ function App() {
 
       <div className="page">
         <div className="page__content">
-
-          <Header
-            text='Выйти'
-            onClick={handleSignOut}>
-            <p className="header__text">{userEmail}</p>
-          </Header>
+          
+          <Header 
+            email={userEmail} 
+            onClick={ handleSignOut } />
 
           <Switch>
 
